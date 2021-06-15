@@ -3,10 +3,12 @@ package com.minhasfinancas.service.impl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.StringMatcher;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.minhasfinancas.exception.RegraNegocioException;
@@ -15,6 +17,7 @@ import com.minhasfinancas.model.enums.StatusLancamento;
 import com.minhasfinancas.model.repository.LancamentoRepository;
 import com.minhasfinancas.service.LancamentoService;
 
+@Service
 public class LancamentoServiceImpl implements LancamentoService {
 
 	private LancamentoRepository repository;
@@ -85,5 +88,10 @@ public class LancamentoServiceImpl implements LancamentoService {
 		if(lancamento.getTipo() == null) {
 			throw new RegraNegocioException("Informe um Tipo de Lançamento.");
 		}
+	}
+
+	@Override
+	public Optional<Lancamento> obterPorId(Long id) {
+		return repository.findById(id);
 	}
 }
