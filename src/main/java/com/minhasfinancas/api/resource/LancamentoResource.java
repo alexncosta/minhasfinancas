@@ -3,6 +3,7 @@ package com.minhasfinancas.api.resource;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException.BadRequest;
 
+import com.minhasfinancas.api.dto.AtualizaStatusDTO;
 import com.minhasfinancas.api.dto.LancamentoDTO;
 import com.minhasfinancas.exception.RegraNegocioException;
 import com.minhasfinancas.model.entity.Lancamento;
@@ -85,6 +88,25 @@ public class LancamentoResource {
 		}).orElseGet(() -> new ResponseEntity("Lançamento não encontrado.", HttpStatus.BAD_REQUEST));
 	}
 
+	@PutMapping("{id}/atualiza-status")
+	public ResponseEntity atualizarStatus(@PathVariable("id") Long id, @RequestBody AtualizaStatusDTO dto) {
+		
+		return service.obterPorId(id).map(entity -> {
+				StatusLancamento statusSelecionado = StatusLancamento.valueOf(dto.getStatus());
+				if(statusSelecionado == null) {
+					return ResponseEntity.badRequest().body("Não foi possível atualizar o Status do Lançamento. Informe um Status válido.");
+				}
+				
+				try {
+					entity.setStatus(statusSelecionado);
+					service.atualizar(entity);
+					return ResponseEntity.ok(entity);
+				} catch (RegraNegocioException e) {
+					return ResponseEntity.badRequest().body(e.getMessage());
+				}
+		}).orElseGet(() -> new ResponseEntity("Lançamento não encontrado.", HttpStatus.BAD_REQUEST));
+	}
+	
 	@DeleteMapping("{id}")
 	public ResponseEntity deletar(@PathVariable("id") Long id) {
 		return service.obterPorId(id).map(entidade -> {
